@@ -1,17 +1,22 @@
-
+#define _GNU_SOURCE
 #include <sys/types.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <err.h>
 #include <unistd.h>
+#include <string.h>
 
 #define	C_IDENT "\177ELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00"
 
 int
 main(int argc, char *argv[])
 {
-	int i, f;
+	int i, j;
+    FILE *f;
 	int ret = 0;
+    int unused __attribute__((unused));
+    char *buffer = 0;
+    long length;
 
 	if (argc < 2) {
 		fprintf(stderr, "files...\n");
@@ -19,21 +24,24 @@ main(int argc, char *argv[])
 	}
 
 	for (i = 1; i < argc; i++) {
-		f = open(argv[i], O_RDWR, 0);
-		if (f == -1) {
-			ret = 1;
-			warn("open %s", argv[i]);
-			goto again;
-		}
+		f = fopen(argv[i], "r+");
 
-		write(f, C_IDENT, 16);
+        fseek(f, 0L, SEEK_END);
+        length = ftell(f);
+        rewind(f);
+        buffer = malloc(length);
+        if (buffer) {
+            unused = fread(buffer, 1, length, f);
+            fclose(f);
+        }
 
-again:
-		if (f != -1) {
-			close(f);
-			f = -1;
-		}
+        for (j = 0; j < 15; j++) buffer[j] = C_IDENT[j];
+
+        char *fname = strncat(argv[i], "_elf", 5);
+        FILE *fw = fopen(fname, "wb");
+
+        fwrite(buffer, 1, length, fw);
+        fclose(fw);
 	}
-
-	return (ret);
+	return (0);
 }
