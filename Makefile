@@ -5,10 +5,10 @@ MAN=$(TARGET).1.gz
 INSTALLDIR=$(DESTDIR)/usr
 
 INCLUDES+=-I/usr/include
-DEBUG+=-g
+DEBUG+=-ggdb
 WARNS+=-Wall -W -Werror -Wno-unused-parameter -Wno-unused-function -Wno-unused-variable
-CFLAGS+=$(WARNS) -O $(DEBUG) $(INCLUDES)
-LDFLAGS+=-O -g
+CFLAGS+=$(WARNS) -O0 $(DEBUG) $(INCLUDES)
+LDFLAGS+=-O0 -g
 
 all: $(TARGET) $(MAN)
 
